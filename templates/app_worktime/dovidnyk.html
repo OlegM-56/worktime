@@ -1,0 +1,65 @@
+<!---  Сеанс перегляду довідника та коригування, додавання, видалення запису довідника ----- -->
+{% extends "base_page.html" %}
+{% load static %}
+
+<!-- Центральная часть сайта -->
+{% block content %}
+	<div>
+		<table class = "list_data">
+		<!-- заголовки стовпців   .visible_fields -->
+		<tr>
+			<th> id </th>
+			{% for field in dov_form.visible_fields %}
+				<th>{{ field.label }}</th>
+			{% endfor %}
+			{% if edit_mode %}
+			<th>&nbsp;</th>
+			{% endif %}
+		</tr>
+
+		<!-- форма для вводу рядка -->
+		{% if edit_mode %}
+			<tr>
+			<td> </td>
+		    <form method="POST" action="{% url url_dov_update id_record %}">
+		       	{% csrf_token %}
+					{% for field in dov_form.visible_fields %}
+						<td>{{ field }}</td>
+					{% endfor %}
+					<td><input type="submit" value="Зберегти" ></td>
+			</form>
+			</tr>
+		{% endif %}
+
+		<!-- існуючи рядки довідника -->
+		{%  for row in rows_list_value %}
+  		<tr>
+			{%  for f, value  in row.items %}
+				<td>{{ value }}</td>
+			{% endfor %}
+			{% if edit_mode %}
+				<td><button type="button" onclick="document.location='{% url url_dov_list row.id %}'">Правка</button>
+					<button type="button" onclick="DeleteRec({{row.id}})">! Видалити</button></td>
+			{% endif %}
+    	</tr>
+		{% endfor %}
+
+		</table>
+	</div>
+
+	<!-- ============ функції та інше ============ -->
+	<script>
+		  	//  --- Видалення запису
+			function DeleteRec(id) {
+				if ( id ) {
+	  				if (confirm("Видалити рядок <" + id + "> ?")) {
+	  					var url = '{% url url_dov_delete 0 %}'
+						url = url.replace("/0/", "/"+id+"/")
+	  					document.location=url
+	  				}
+ 			 	}
+			}
+	</script>
+
+
+	{% endblock %}

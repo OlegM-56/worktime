@@ -1,0 +1,11 @@
+{% extends "base_page.html" %}
+
+{% block content %}
+	<form id="userform">
+	{% csrf_token %}
+		<table>
+			{{ form.as_table }}
+		</table>
+	</form>
+
+{% endblock %}

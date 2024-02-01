@@ -1,0 +1,28 @@
+<!---  Шаблон для виводу табличних довідників ----- -->
+
+{% extends "base_page.html" %}
+
+{% load static %}
+
+	<!-- Центральна частина сайта -->
+	{% block content %}
+		<table class = "list_data">
+		<!--  заголовки -->
+		<tr>
+			{% for title in list_title %}
+				<th>{{ title }}</th>
+			{% endfor %}
+			<th>Операції</th>
+		</tr>
+		<!-- рядки таблиці -->
+		{%  for row in list_value %}
+	  	<tr>
+			{%  for val in row %}
+	    		<td>{{ val }}</td>
+			{% endfor %}
+			<td><a href="{% url 'dep_update' pk=row.0 %}">Правка</a>  <a href="{% url 'dep_delete' pk=row.0 %}">Видалити</a></td>
+	    <tr>
+		{% endfor %}
+		</table>
+
+	{% endblock %}

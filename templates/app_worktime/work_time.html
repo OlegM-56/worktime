@@ -1,0 +1,412 @@
+<!---  Облік робочого часу НТЦ по проектам ----- -->
+{% extends "base_page.html" %}
+{% load static %}
+
+<!-- Центральна частина сайту -->
+{% block content %}
+	<form id="userform" method="POST">
+	{% csrf_token %}
+		{{ form }}
+		{% if not edit_mode %}
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			{% if selected_par %}
+				<button type="button" id="id_reset_btn" onclick="document.location='{% url 'list_worktime' %}'">Скинути --> " "</button>
+			{% else %}
+				<input type="submit" value="<< Сформувати >>" >
+			{% endif %}
+		{% endif %}
+	</form>
+	<p><hr>
+
+	{% if edit_mode %}
+		<!-- **************  Вивід бланку для вводу/редагування рядка розподілу робочого часу ***************  -->
+		<form id="row_form" class="blankAccountWorkTime" method="POST" action="{% url 'save_worktime' id_row options_list %}">
+		{% csrf_token %}
+			<table>
+				{{ row_form.as_table }}
+				<tr><th>Загальний % готовності документу</th><td id="infoAllPercent"><span id="AllWorkPercent">0</span>%  (без урахування поточної роботи)</td></tr>
+			</table>
+			<p><input id="submit_row" type="submit" value="<< Зберегти >>">&nbsp;&nbsp;&nbsp;&nbsp;
+			<button id="return_list_btn" type="button" onclick="document.location='{% url 'list_worktime' options_list %}'">Повернутись до списку --> " "</button></p>
+		</form>
+
+	{% else %}
+		<!--   *********************  Вивід таблиці розподілу робочого часу *********************  -->
+		<div id="id_div_table">
+			<table class = "list_data">
+			<!-- заголовки стовпців  -->
+			<tr>
+				{% if can_edit or can_copy_next_month %}
+					<th><i>Операція</i></th>
+				{% endif %}
+               <!--for title_fld in title_fields|slice:":8"-->
+				{% for title_fld in title_fields %}
+					{% if title_fld != 'id' %}
+						<th>{{ title_fld|linebreaksbr }}</th>
+					{% endif %}
+				{% endfor %}
+			</tr>
+
+			<!-- якщо параметри вибрані формуємо рядок кнопки додавання та сумми витрачених годин  -->
+			{% if selected_par %}
+				<tr>
+					{% if can_edit %}
+						<td><button type="button" title="Додати роботу" onclick="document.location='{% url 'edit_worktime' 1 0 options_list %}'">
+								<img src="{% static 'img/add.png' %}">
+							</button></td>
+					{% elif can_copy_next_month %}
+						<td></td>
+					{% endif %}
+					{%  for value in total_time_row %}
+						<td><b>{{ value }}</b></td>
+					{% endfor %}
+				</tr>
+			{% endif %}
+
+				<!-- існуючи рядки  -->
+			{%  for row in rows_list_value %}
+			<tr>
+				{% if can_edit or can_copy_next_month %}
+					<td>
+				{% endif %}
+					{% if can_edit %}
+						<button type="button" title="Правка" onclick="document.location='{% url 'edit_worktime' 1 row.id options_list %}'">
+							<img src="{% static 'img/edit.png' %}">
+						</button>
+						<button type="button" title="Копіювати" onclick="document.location='{% url 'edit_worktime' 3 row.id options_list %}'">
+							<img src="{% static 'img/copy.png' %}">
+						</button>
+					{% endif %}
+					{% if can_copy_next_month %}
+						<button type="button" title="Копіювати у наступний місяць" onclick="document.location='{% url 'edit_worktime' 4 row.id options_list %}'">
+							<img src="{% static 'img/next_month.png' %}">
+						</button>
+					{% endif %}
+					{% if can_edit %}
+						<!--&nbsp;-->
+						<button type="button" title="!! Видалити !!" onclick="DeleteRec({{row.id}})">
+							<img src="{% static 'img/delete.png' %}">
+						</button>
+					{% endif %}
+				{% if can_edit or can_copy_next_month %}
+					</td>
+				{% endif %}
+				{%  for field, value  in row.items %}
+					{% if field != 'id' %}
+						<td>{{ value }}</td>
+					{% endif %}
+				{% endfor %}
+			</tr>
+			{% endfor %}
+			</table>
+
+			<!-- якщо параметри вибрані формуємо Пагінатор  -->
+			{% if selected_par and params.total_pages > 0 %}
+				{% include "paginator.html" %}
+			{% endif %}
+		</div>
+	{% endif %}
+
+	<!-- ============ функції та інше ============ -->
+	<script>
+		{% if selected_par and can_edit %}
+			//  --- Видалення запису
+			function DeleteRec(id) {
+				if ( id ) {
+					if (confirm("Видалити рядок ?")) {
+  						var url = '{% url 'delrow_worktime' 'del' 0 options_list %}'
+						url = url.replace("/0", "/"+id)
+						document.location=url
+					}
+				}
+			}
+		{% endif %}
+		//  ---- зміна назви поля Дата при виборі  "За місяць"
+		function handlePeriodChange() {
+  			let label = $('label[for="id_par_work_date"]').first();
+		  	let period = $("#id_period").prop('checked'); // Використовуємо prop() для перевірки вибраного стану
+  			  // console.log(period)
+  			label.text(period ? ' Дата початку місяця' : ' Дата');
+		}
+		$( "#id_period" ).change(function() {
+			handlePeriodChange();
+		});
+		handlePeriodChange();
+
+		// ============  Функції для бланку вводу  =====================
+		{% if edit_mode %}
+			// -- всі види документів
+			let optionDocKind = [
+				{%  for value, npp,  text  in list_doc_kind %}
+					{ value: '{{ value }}', text: '{{ npp }} - {{ text }}' },
+				{% endfor %}
+			];
+			// -- для кожного Змісту роботи формуємо перелік доступних видів документів - в рядок через кому
+			let docKindForWorkContent = [
+				{%  for value in doc_kind_for_work_content %}
+					'{{ value }}',
+				{% endfor %}
+			];
+
+			//  ------ встановлення вибору списків Видів документів при зміні Змісту роботи
+			let workContent = document.getElementById('id_work_content');
+				// Отримати посилання на елемент <select> виду документів
+			let selectDocKind = document.getElementById('id_doc_kind');
+			let oldValue = selectDocKind.value;
+			//console.log(oldValue);
+
+			function handleWorkContentChange() {
+				// Очистити вміст елемента <select>
+				selectDocKind.innerHTML  = '';
+
+				// Додати нові варіанти вибору залежно від обраного коду змісту роботи
+				let selectedValue = $("#id_work_content").val();
+				let listDocKindStr = docKindForWorkContent[selectedValue];
+				let listDocKind = [];
+				if (listDocKindStr) {
+					listDocKind = listDocKindStr.split(',');
+				} else {
+					listDocKind = ['390']
+				}
+						//console.log(listDocKind);
+
+				optionDocKind.forEach(function(option) {
+					//  якщо вид документу дозволений для такого Зміту роботи
+					if ( listDocKind && listDocKind.includes(option.value) ) {
+						    //console.log(option.value)
+						// Створення нового елементу <option>
+						let newOption = document.createElement('option');
+						newOption.value = option.value;
+						newOption.text = option.text  //.replace('0','');
+
+						// Додавання нового елементу <option> до елементу <select>
+						selectDocKind.appendChild(newOption);
+					};
+				});
+				selectDocKind.value = oldValue;
+			}
+
+			// Встановлюємо обробник події зміни для поля work_content
+			workContent.addEventListener('change', handleWorkContentChange);
+			// Викликаємо функцію handleDocFormatChange() одразу для встановлення початкового стану
+			handleWorkContentChange();
+
+
+			//  ---- запис назви замовлення в сховане поле "nam_zak" -------
+			function setNamZakaz() {
+				let nam_zakaz = $("#id_zakaz option:selected").text(); // Отримати значення поля id_zakaz
+				row_zakaz = nam_zakaz.split(" *** ");
+				if (row_zakaz.length == 2) {
+					nam_zakaz = row_zakaz[0];
+				}
+				else {
+					nam_zakaz = nam_zakaz.split(" - ")[1];
+				}
+				 $("#id_nam_zak").val(nam_zakaz); // Встановити значення поля id_nam_zak
+				console.log(nam_zakaz);
+			}
+			//  при зміні замовлення
+			$( "#id_zakaz" ).change(function() {
+				setNamZakaz();
+			});
+			//  після завантаження сторінки, початковий стан
+			$(document).ready(function() {
+				setNamZakaz();
+			});
+
+			// ---------------- Контроль формату документу та кількості сторінок -----------------
+			// Отримуємо посилання на елементи форми
+			let docFormatField = document.getElementById('id_doc_format');
+			let docKrformField = document.getElementById('id_doc_krform');
+
+			// Функція, яка буде викликатися при зміні значення поля doc_format
+			function handleDocFormatChange() {
+			  if (docFormatField.value === '0') {
+			  	docKrformField.setAttribute('min', '0');
+				docKrformField.value = '0';
+				docKrformField.readOnly = true;
+			  } else {
+			  	docKrformField.setAttribute('min', '1');
+				if (docKrformField.value == 0) {
+					docKrformField.value = 1;
+					docKrformField.readOnly = false;
+					docKrformField.focus();
+				}
+			  }
+			}
+
+			// Встановлюємо обробник події зміни для поля doc_format
+			docFormatField.addEventListener('change', handleDocFormatChange);
+
+			// Викликаємо функцію handleDocFormatChange() одразу для встановлення початкового стану
+			handleDocFormatChange();
+
+			// <<< ------------ Загальний % готовності документу ------------------
+			function setAllWorkPercent() {
+				// Отримуємо значення полів форми
+				let id_employee = $("#id_employee").val();   // Співробітник
+				let id_zak =  $("#id_zakaz option:selected").val();  // Виробниче Замовлення
+				let id_work_content = $("#id_work_content").val();  // Зміст роботи
+				let id_doc_kind = $("#id_doc_kind").val();  // Створено документ
+				let doc_designation = $("#id_doc_designation").val();  // позначення документу
+				let id_row = {{id_row}}  // id роботи
+
+				// ---- якщо не всі параметри визначені - нічого не робимо (ще не до кінця заповнена форма)
+				if  ( doc_designation.length < 4 ) doc_designation = '';
+				if ( ! ( Boolean(id_employee) && Boolean(id_zak) && Boolean(id_work_content) && id_work_content==1 &&
+						 Boolean(id_doc_kind) && Boolean(doc_designation) && Boolean(id_row) )  ) {
+				    console.log('Не всі дані визначені');
+				    //  ховаємо порожню інфу
+				    $( "#AllWorkPercent" ).html('');
+				    $( "#infoAllPercent" ).hide();
+				    // прибираємо обмеження по % виконання роботи
+				    $("#id_work_percent").attr("max", 100);
+				    $("#id_work_percent").val(100);
+				    return 0;
+				}
+
+				// Отримуємо значення токена CSRF з форми
+				let csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+				// Отримуємо URL для Ajax-запиту (ваш URL для view, який обробляє запит)
+				let url = "/get_all_work_percent/";
+
+				// Створюємо об'єкт FormData
+				let formData = new FormData();
+				// Додаємо параметри
+				formData.append('id_employee', id_employee);
+				formData.append('id_zak', id_zak);
+				formData.append('id_work_content', id_work_content);
+				formData.append('id_doc_kind', id_doc_kind);
+				formData.append('doc_designation', doc_designation);
+				formData.append('id_row', id_row);
+
+				// Опції для запиту, у тому числі передача параметру session
+				let options = {
+					method: "POST",
+					headers: {
+						"X-CSRFToken": csrfToken,
+					},
+					body: formData,
+				};
+
+				// Виконуємо Ajax-запит
+				fetch(url, options)
+				.then( (response) => response.json() )
+				.then( (data) => {
+				  // Оновлюємо вміст тегу <td id="AllWorkPercent"> отриманим текстом
+				  $( "#AllWorkPercent" ).html(data.percent_value);
+				    $( "#infoAllPercent" ).show();
+  		   			console.log(data.percent_value);
+  		   		  //  обмежуємо поточне поле вводу % виконання
+  		   		  let tek_max = 100 - data.percent_value;
+  		   		  console.log('tek_max = ' + tek_max);
+  		   		  $("#id_work_percent").attr("max", tek_max);
+			    })
+				.catch( (error) => {
+				    console.error("Сталася помилка під час виконання запиту:", error);
+				});
+			}
+
+			//  при зміні Позначення документу  перераховуємо Загальний % готовності документу
+			$( "#id_doc_designation, #id_zakaz, #id_work_content, #id_doc_kind" ).change(function() {
+				setAllWorkPercent();
+			});
+			//  ----------------------------- >>>
+
+			//  <<----- при зміні поля Створено документ:
+			//  якщо поле «Створено документ»  не заповнене, або == «46 – Робота не передбачає оформлення документу»,
+			//  повязані поля зробити read-only
+			function setParamDocument() {
+				if ( $("#id_doc_kind").val() == "390" || ! $("#id_doc_kind").val() ) {
+					$("#id_doc_designation, #id_doc_name").val("–");
+					$("#id_doc_krform").val(0);
+					$("#id_work_percent").val(100);
+					$("#id_doc_designation, #id_doc_name, #id_doc_krform, #id_work_percent").attr("readOnly", true);
+					$("#id_doc_format").val("0");
+					$("#id_doc_format").attr("readOnly", true);
+				} else {
+					$("#id_doc_designation, #id_doc_name, #id_doc_krform, #id_work_percent").attr("readOnly", false);
+					$("#id_doc_format").attr("readOnly", false);
+				}
+				//
+			}
+
+			$( "#id_doc_kind" ).change(function() {
+				setParamDocument();
+			});
+
+			// --------------- Фільтрація списку Замовлень -----------------
+			function filterOptions() {
+			  let input, filter, select, options, option, i, txtValue;
+			  input = document.getElementById("searchInput");
+			  filter = input.value.toUpperCase();
+			  select = document.getElementById("id_zakaz");
+			  options = select.getElementsByTagName("option");
+
+			  for (i = 0; i < options.length; i++) {
+				option = options[i];
+				txtValue = option.textContent || option.innerText;
+				if (txtValue.toUpperCase().includes(filter)) {
+				  option.style.display = "";
+				} else {
+				  option.style.display = "none";
+				}
+			  }
+			}
+			//  ---------------------------- >>
+
+			//  ===================== після завантаження сторінки, початковий стан ==================
+			$(document).ready(function() {
+				setAllWorkPercent();
+				setParamDocument();
+
+				// ---- Додаємо поле для фільтрації Списку замовлень ----------------
+				// Створюємо новий елемент input
+				let searchInput = document.createElement("input");
+				searchInput.type = "text";
+				searchInput.id = "searchInput";
+				searchInput.oninput = filterOptions;
+				searchInput.onfocus = function() {
+    				this.select();
+				};
+				searchInput.size = "5";
+				searchInput.title = "Введіть фільтр для замовлень";
+				// Знаходимо елемент select
+				let selectElement = document.getElementById("id_zakaz");
+				// Вставляємо поле input перед select
+				selectElement.parentNode.insertBefore(searchInput, selectElement);
+
+				// Додаємо обробник події 'keydown' для всіх полів вводу в формі, окрім select
+				$("form input[type='text'], form input[type='number'], form input[type='date']").on("keydown", function(event) {
+					if (event.key === "Enter") {            // && $(this).attr("id") !== "id_zakaz") {
+						// Відміна дії клавіші Enter
+						event.preventDefault();
+					}
+				});
+
+			});
+			// ====================================================================================
+
+			// Після натискання кнопки 'Зберегти' блокуються кнопки 'Зберегти' та 'Повернутись до списку'
+			// для запобігання повторного натискання
+			$( "#row_form" ).submit(function() {
+				$("#submit_row, #return_list_btn").attr("disabled", true);
+			});
+		{% endif %}
+
+		// ----- Отримуємо форму за допомогою її ідентифікатора
+		let form = document.getElementById('userform');
+
+		// Додаємо обробник події submit до форми
+		form.addEventListener('submit', function(event) {
+			//  анімація на час очікування
+			let preloader = document.getElementById("preloader");
+			preloader.style.display = "block";
+			if (preloader.style.display == "") {
+				preloader.style.display = "block";
+			}
+		});
+	</script>
+
+	{% endblock %}

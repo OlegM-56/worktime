@@ -1,0 +1,22 @@
+{% extends "base_page.html" %}
+
+{% load static %}
+
+	<!-- Центральная часть сайта -->
+	{% block content %}
+		<p>
+			<img src="{% static 'img/Ship.gif' %}" width="275">
+			<h2>Назва Підприємства</h2>
+			<hr>
+			{% if user.is_authenticated %}
+				Активний користувач: <b>{{ user.last_name }}</b><br><br>
+				<form method="post" action="{% url 'logout' %}">
+					{% csrf_token %}
+					<button type="submit"><<< Вийти з системи</button>
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					Змінити пароль<a href="{% url 'password_change' %}">  --->>></a>
+				</form>
+			{% endif %}
+		</p>
+	{% endblock %}
+

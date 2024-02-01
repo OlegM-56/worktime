@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Scanner</title>
+</head>
+<body>
+  <video id="video" width="300" height="200" autoplay></video>
+  <div id="result"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.0.0/dist/jsQR.min.js"></script>
+<!--  <script src="app.js"></script>-->
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+  const video = document.getElementById('video');
+  const resultDiv = document.getElementById('result');
+
+  // Запускаємо відеопотік з камери
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      video.srcObject = stream;
+      video.play();
+
+      // Викликаємо функцію зчитування QR-коду
+      readQrCode();
+    })
+    .catch(error => {
+      console.error('Error accessing camera:', error);
+    });
+
+  // Функція зчитування QR-коду
+  const readQrCode = () => {
+    // Визначаємо, чи відео готове до зчитування
+    if (video.videoWidth > 0 && video.videoHeight > 0) {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      // Виводимо відеокадр на canvas
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Отримуємо дані зображення з canvas
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+      // Викликаємо функцію декодування QR-коду з jsQR
+      const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+      if (code) {
+        // Якщо QR-код зчитано, виводимо результат
+        resultDiv.innerText = 'QR Code: ' + code.data;
+
+        // Тут ви можете використовувати код, як вам потрібно
+      }
+    }
+
+    // Продовжуємо зчитування на кожному кадрі відеопотоку
+    requestAnimationFrame(readQrCode);
+  };
+});
+
+  </script>
+
+</body>
+</html>

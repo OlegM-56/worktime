@@ -1,0 +1,8 @@
+set PATH=%PATH%;d:\Programs\sqlite3\
+
+sqlite3 data.db
+.mode csv
+.separator ;
+.separator "\t"
+.import your_data.csv your_table
+.quit

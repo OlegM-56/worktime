@@ -1,0 +1,63 @@
+<!---  Облік робочого часу НТЦ по проектам ----- -->
+{% extends "base_page.html" %}
+{% load static %}
+
+<!-- Центральна частина сайту -->
+{% block content %}
+	<!--   *********************  Вивід таблиці розподілу робочого часу *********************  -->
+	<div id="id_div_table">
+		<table class = "list_data" id="id_rep_table">
+			<!-- заголовки стовпців  -->
+			<tr>
+				{% for title_fld in title_fields %}
+					{% if title_fld != 'id' %}
+						<th>{{ title_fld|linebreaksbr }}</th>
+					{% endif %}
+				{% endfor %}
+			</tr>
+			<!--	Рядки таблиці	-->
+			{%  for row in rows_list_value %}
+				<tr>
+					{%  for field, value  in row.items %}
+						{% if field != 'id' %}
+							<td>
+							{% if '***' in value %}
+								<b>{{ value|cut:"***" }}</b>
+							{% else %}
+								{{ value }}
+							{% endif %}
+							</td>
+						{% endif %}
+					{% endfor %}
+				</tr>
+			{% endfor %}
+		</table>
+		<!-- Пагінатор -->
+		{% if params.total_row > 0 %}
+			{% include "paginator_front.html" %}
+		{% endif %}
+	</div>
+
+	<!-- ============ функції та інше ============ -->
+	<script>
+			document.addEventListener("DOMContentLoaded", function() {
+				btn_add_global = 0;
+				{% if params.page and params.page > 0 and rows_list_value %}
+					//  змінна в глобальному контексті
+					{% if params.limit %}
+						limit_global = {{params.limit}};
+					{% endif %}
+					page_global = {{params.page}};
+						console.log('page_global=',page_global)
+					SelectPage(undefined, page_global);
+				{% else %}
+					limit_global = 0;
+					page_global = 1;
+				{% endif %}
+			});
+	</script>
+
+
+
+
+{% endblock %}

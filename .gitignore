@@ -1,0 +1,6 @@
+/Pipfile.lock
+/~$*.docx
+/~*.tmp
+*.xml
+*.iml
+/.idea/.gitignore

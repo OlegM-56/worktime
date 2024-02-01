@@ -1,0 +1,477 @@
+/*  ---------- Загальні оформлення --------------  */
+ body {
+    font: 10pt Arial, Helvetica, sans-serif; /* Шрифт на веб-странице */
+    background:  #f0f0f0  /*#e1dfb9; /* Цвет фона */
+   }
+    h3.title {
+    font-size: 2.0em;  /* Размер шрифта */
+    /*color: Silver; /* Цвет текста */
+    margin: 0; /*Отступ сверху */
+    padding: 0 0 5px;
+    text-align: center;  /*Выравнивание по центру */
+   }
+   h3 {
+    margin: 0;
+    padding: 0 0 5px;
+   }
+   h4 {
+    margin: 0;
+    padding: 0 0 5px;
+   }
+
+   table.title {
+    margin: 0;
+    padding: 0;
+   }
+   .title td, th {
+    margin: 0;
+    padding: 0;
+    }
+
+   A { text-decoration : none;  }
+   A.title:visited { color: black; }
+   A:Hover { text-decoration : underline; }
+
+   p.main { margin-left: 10px; }
+
+    button:hover, input[type='submit']:hover {
+      cursor: pointer;
+      border: 2px solid black;
+      border-radius:5px;
+    }
+
+
+ /*  <----  Меню  */
+#menu__toggle {
+  opacity: 0;
+}
+
+#menu__toggle:checked ~ .menu__btn > span {
+  transform: rotate(45deg);
+}
+#menu__toggle:checked ~ .menu__btn > span::before {
+  top: 0;
+  transform: rotate(0);
+}
+#menu__toggle:checked ~ .menu__btn > span::after {
+  top: 0;
+  transform: rotate(90deg);
+}
+#menu__toggle:checked ~ .menu__box {
+  visibility: visible;
+  left: 0;
+}
+
+.menu__btn {
+  display: flex;
+  align-items: center;
+  position: fixed;
+  top: 10px;
+  left: 20px;
+
+  width: 26px;
+  height: 26px;
+
+  cursor: pointer;
+  z-index: 10;
+}
+
+.menu__btn > span,
+.menu__btn > span::before,
+.menu__btn > span::after {
+  display: block;
+  position: absolute;
+
+  width: 100%;
+  height: 2px;
+
+  background-color: #616161;
+
+  transition-duration: .25s;
+}
+.menu__btn > span::before {
+  content: '';
+  top: -8px;
+}
+.menu__btn > span::after {
+  content: '';
+  top: 8px;
+}
+
+.menu__box {
+  display: block;
+  position: fixed;
+  visibility: hidden;
+  top: 60px;
+  left: -100%;
+
+  width: 300px;
+  height: 100%;
+
+  margin: 0;
+  padding: 10px 0;
+
+  list-style: none;
+
+  background-color: #ECEFF1;
+  box-shadow: 1px 0px 6px rgba(0, 0, 0, .2);
+
+  transition-duration: .25s;
+  z-index: 10;
+
+  max-height: 750px;  /* Максимальна висота меню, після чого з'являться полоси прокрутки */
+  overflow-y: auto;  /* Включення вертикальної полоси прокрутки */
+
+}
+
+.menu__item {
+  display: block;
+  padding: 5px 24px;
+
+  color: #333;
+
+  font-family: 'Roboto', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+
+  text-decoration: none;
+
+  transition-duration: .25s;
+}
+.menu__item:hover {
+  background-color: #CFD8DC;
+}
+.menu__item:active {
+  background-color: black;
+}
+/* --->  */
+
+
+/*  ---------- Таблиці для виводу даних --------------  */
+.list_data {
+  border-collapse: collapse;
+  /*width: 100%;*/
+}
+
+table.list_data.collapsed {
+border-collapse: unset;
+}
+
+.list_data td {
+  border: 1px solid #ddd;
+  padding: 2px 5px 2px 5px;
+}
+
+#total {
+    font-weight: bold;
+}
+#sub_rows {
+    font-style: italic;
+    padding-left: 2em;
+}
+
+.list_data tr:not([id="sub_rows"]):nth-child(even) {
+  background-color: #faf8e5;
+}
+
+.list_data tr:not([id="sub_rows"]):nth-child(odd) {
+  background: #FFF;
+}
+
+tr.list_data_even {
+  background-color: #f2f2f2;
+}
+
+.list_data tr:not([id="sub_rows"]):hover {
+  background-color: #e6e6e6;
+}
+
+.list_data tr:hover {
+  background-color: #e6e6e6;
+}
+
+
+.list_data th {
+  padding: 12px 5px 12px 5px;
+  text-align: center;
+  background-color: #8fa09b;  /* OliveDrab;  DarkOliveGreen; #04AA6D; */
+  color: white;
+}
+
+th.vertical-text {
+    text-align: center;
+    border: 1px solid #ddd;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+}
+
+
+.preloader {
+    display:none;
+    position: absolute;
+    opacity: 0.5;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    height: 100%;
+
+    background: #ffffff;
+
+    z-index: 1001;
+}
+
+.preloader__row {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    width: 70px;
+    height: 70px;
+
+    text-align: center;
+    animation: preloader-rotate 2s infinite linear;
+}
+
+.preloader__item {
+    position: absolute;
+    display: inline-block;
+    top: 0;
+    background-color: rgb(80 35 248);
+    border-radius: 100%;
+    width: 35px;
+    height: 35px;
+    animation: preloader-bounce 2s infinite ease-in-out;
+}
+
+.preloader__item:last-child {
+    top: auto;
+    bottom: 0;
+    animation-delay: -1s;
+}
+
+@keyframes preloader-rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes preloader-bounce {
+    0%,
+    100% {
+        transform: scale(0);
+    }
+
+    50% {
+        transform: scale(1);
+    }
+}
+
+.loaded_hiding .preloader {
+    transition: 0.3s opacity;
+    opacity: 0;
+}
+
+.loaded .preloader {
+    display: none;
+}
+
+/* ---- Анімація після запуску на виконання операції---- */
+.preloader {
+    display:none;
+    position: absolute;
+    opacity: 0.5;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    background: #ffffff;
+    z-index: 1001;
+}
+
+.preloader__row {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    width: 70px;
+    height: 70px;
+    text-align: center;
+    animation: preloader-rotate 2s infinite linear;
+}
+
+.preloader__item {
+    position: absolute;
+    display: inline-block;
+    top: 0;
+    background-color: rgb(80 35 248);
+    border-radius: 100%;
+    width: 35px;
+    height: 35px;
+    animation: preloader-bounce 2s infinite ease-in-out;
+}
+
+.preloader__item:last-child {
+    top: auto;
+    bottom: 0;
+    animation-delay: -1s;
+}
+
+@keyframes preloader-rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes preloader-bounce {
+    0%,
+    100% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1);
+    }
+}
+
+.loaded_hiding .preloader {
+    transition: 0.3s opacity;
+    opacity: 0;
+}
+
+.loaded .preloader {
+    display: none;
+}
+/* ----------------------------------------------------  */
+
+/* -------- Приховуємо поля вводу в формі бланку вводу/редагування рядка розподілу робочого часу  ---------- */
+.blankAccountWorkTime [readonly] {
+  display: none;
+}
+
+.hidden-field-form {
+    display: none;
+}
+
+/* -- Довідкова та додаткова інфа*/
+.info {
+    font-style: italic;
+}
+
+/*  -  */
+.pagination {
+    display: -ms-flexbox;
+    display: flex;
+    padding-left: 0;
+    list-style: none;
+    border-radius: .25rem
+}
+
+.page-link {
+    position: relative;
+    display: block;
+    padding: .5rem .75rem;
+    margin-left: -1px;
+    line-height: 1.25;
+    color: #007bff;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    cursor: pointer;
+}
+
+.page-link:hover {
+    z-index: 2;
+    color: #0056b3;
+    text-decoration: none;
+    background-color: #e9ecef;
+    border-color: #dee2e6
+}
+
+.page-link:focus {
+    z-index: 2;
+    outline: 0;
+    box-shadow: 0 0 0 .2rem rgba(0,123,255,.25)
+}
+
+.page-item:first-child .page-link {
+    margin-left: 0;
+    border-top-left-radius: .25rem;
+    border-bottom-left-radius: .25rem
+}
+
+.page-item:last-child .page-link {
+    border-top-right-radius: .25rem;
+    border-bottom-right-radius: .25rem
+}
+
+.page-item.active .page-link {
+    z-index: 1;
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff
+}
+
+.page-item.disabled .page-link {
+    color: #6c757d;
+    pointer-events: none;
+    cursor: auto;
+    background-color: #fff;
+    border-color: #dee2e6
+}
+
+.pagination-lg .page-link {
+    padding: .75rem 1.5rem;
+    font-size: 1.25rem;
+    line-height: 1.5
+}
+
+.pagination-lg .page-item:first-child .page-link {
+    border-top-left-radius: .3rem;
+    border-bottom-left-radius: .3rem
+}
+
+.pagination-lg .page-item:last-child .page-link {
+    border-top-right-radius: .3rem;
+    border-bottom-right-radius: .3rem
+}
+
+.pagination-sm .page-link {
+    padding: .25rem .5rem;
+    font-size: .875rem;
+    line-height: 1.5
+}
+
+.pagination-sm .page-item:first-child .page-link {
+    border-top-left-radius: .2rem;
+    border-bottom-left-radius: .2rem
+}
+
+.pagination-sm .page-item:last-child .page-link {
+    border-top-right-radius: .2rem;
+    border-bottom-right-radius: .2rem
+}
+
+.block-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;  /* Вирівнюємо горизонтально */
+}
+
+.block-left {
+    display: flex;
+    justify-content: left;
+    align-items: center;  /* Вирівнюємо горизонтально */
+}
+
+.text-center {
+    text-align:center!important
+}
+
+.center-span {
+    text-align: center; /* Вирівнюємо по центру по горизонталі */
+    margin-left: 10px; /* Додайте проміжок перед <span> */
+}
+
+b.ramka {
+  border: 1px solid #000; /* Тут ви можете налаштувати стиль та розмір рамки */
+  padding: 5px; /* Налаштування відступів від тексту */
+}
+

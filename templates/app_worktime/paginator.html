@@ -1,0 +1,97 @@
+<!-- Пагінатор на стороні СЕРВЕРА-->
+            <div class="block-center">
+				<ul class="pagination justify-content-center">
+					{% if params.page == 1 %}
+						<li class="page-item disabled"><a class="page-link">«</a></li>
+						<li class="page-item disabled"><a class="page-link">‹</a></li>
+					{% else %}
+						<li class="page-item"><a class="page-link" onclick="SelectPage(1,0)">«</a></li>
+						<li class="page-item"><a class="page-link" onclick="SelectPage(0,-1)">‹</a></li>
+					{% endif %}
+
+					{% for page_number in params.pages %}
+						{% if page_number == params.page %}
+							<li class="page-item active"><a class="page-link" onclick="SelectPage({{page_number}},0)">{{page_number}}</a></li>
+						{% else %}
+							<li class="page-item"><a class="page-link" onclick="SelectPage({{page_number}},0)">{{page_number}}</a></li>
+						{% endif %}
+					{% endfor %}
+
+					{% if params.page == params.total_pages %}
+						<li class="page-item disabled" ><a class="page-link">›</a></li>
+						<li class="page-item disabled"><a class="page-link">»</a></li>
+					{% else %}
+						<li class="page-item"><a class="page-link" onclick="SelectPage(0,1)">›</a></li>
+						<li class="page-item"><a class="page-link" onclick="SelectPage({{params.total_pages}},0)">»</a></li>
+					{% endif %}
+				</ul>
+					<span class="center-span" >
+						Всього рядків <b class="ramka">{{params.total_row}}</b>
+					</span>
+					<span class="center-span" >
+						<label for="id_limit">Кількість на сторінці</label>
+						<input type="number" name="limit" value="{{params.limit}}" min="0" max="100" required onfocus="this.select()" id="id_limit">
+					</span>
+
+            </div>
+
+			<!-- ============ функції та інше ============ -->
+			<script>
+				// ---- Зміна сторінок в Пагінаторі
+				{% autoescape off %}
+				function SelectPage(page,step) {
+					// отримуємо адресу сторінки, видаляємо http та декодуємо в звичайний текст
+					var url_main = window.location.href;
+					url_main = url_main.replace(/^https?:\/\//, '');
+					url_main = decodeURIComponent(url_main);
+					// Беремо всісимволи перед першим входженням "{"
+					//  [^{]* означає "будь-який символ, крім {" повторений нуль або більше разів.
+					var match = url_main.match(/[^{]*/);
+					// Якщо символ '{' знайдено
+					if (match) {
+    				   url_main = match[0];
+					}
+					// Видаляємо всі символи з початку до першого "/",  / - лишаємо в рядку
+					var url = url_main.replace(/^[^/]*\//, '/');
+					// якщо на закінчується на "/" - додаємо
+					if (!url.endsWith("/")) {
+ 				   		url += "/";
+					}
+					  // отримуємо об'єкт JSON з рядка параметрів
+					var jsonOptionsList = JSON.parse('{{options_list}}');
+
+					  //  Перехід на конкретну сторінку
+					if (page != 0) {
+						  //  задаємо нову сторінку
+						jsonOptionsList.page = page;
+					}
+					  //  наступна/попередня сторінка від поточної
+					else {
+						  // поточна сторінка
+						var curPage = {{params.page}};
+						  //  задаємо нову сторінку
+						jsonOptionsList.page = curPage + step;
+					}
+					  //  задаємо кількість рядків на сторінці
+					var total_row = {{params.total_row}}; // всього рядків
+					var limit = parseInt($("#id_limit").val());
+					jsonOptionsList.limit = total_row > limit ?  limit : total_row;
+					  // Перетворюємо об'єкт назад у рядок JSON
+					var OptionsList = JSON.stringify(jsonOptionsList);
+					url = url + OptionsList;
+							console.log(url);
+							//alert('??????');
+ 					//  --- якщо форма неактивна (є кнопка "Скинути") - переходимо по URL
+ 					if ( document.getElementById("id_reset_btn") ) {
+ 						document.location=url;
+ 					}
+ 					//  --- якщо форма активна - запуск форми
+ 					else {
+						var form = document.getElementById("userform");
+						// Змінюємо значення action на новий URL
+						form.action = url;
+						form.submit();
+					}
+				}
+				{% endautoescape %}
+			</script>

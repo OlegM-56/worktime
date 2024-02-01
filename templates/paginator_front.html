@@ -1,0 +1,19 @@
+<!--  Пагінатор на стороні КЛІЄНТА  -->
+{% load static %}
+            <div class="block-left">
+				<ul class="pagination justify-content-center" id="id_ul_pages">
+						<li class="page-item disabled"><a class="page-link">«</a></li>
+				</ul>
+					<span class="center-span" id="id_total_row" >
+						Всього рядків <b class="ramka">{{params.total_row}}</b>
+					</span>
+					<span class="center-span" >
+						<label for="id_limit">Кількість на сторінці</label>
+						<input type="number" name="limit" value="{{params.limit}}" min="0" max="100" required onfocus="this.select()" id="id_limit">
+					</span>
+
+            </div>
+
+			<!-- ============ функції та інше ============ -->
+    		<script src="{% static '/script/paginator_front.js' %}"></script>
+

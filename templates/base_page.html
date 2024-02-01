@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static '/css/style.css' %}" type="text/css">
+    <link rel="icon" type="image/x-icon" href="{% static '/img/favicon.ico' %}">
+    <script src="{% static '/script/jquery-3.7.0.min.js' %}"></script>
+
+    <!--    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>-->
+    <title>{{Title}}</title>
+</head>
+<body>
+<!-- Меню -->
+<table class="title" width="100%">
+    <tr>
+        <td class="title">
+            <div class="hamburger-menu">
+                <input id="menu__toggle" type="checkbox"/>
+                <label class="menu__btn" for="menu__toggle">
+                    <span></span>
+                </label>
+                <ul class="menu__box">
+
+                    {% if user.is_authenticated %}
+                       <li><a class="menu__item" href="/">Головна</a></li>
+                    {% else %}
+                        <li><a class="menu__item" href="{% url 'main_login' %}">Вхід в систему</a></li>
+                    {% endif %}
+
+                    {% if 'app_worktime.NTC_' in permit|join:',' %}
+                    <!--  Облік робочого часу НТЦ - app_worktime  -->
+                        <li class="menu__item">-------------------------</li>
+                        <li><a class="menu__item" href="{% url 'list_worktime' %}">Журнал обліку робочого часу НТЦ</a></li>
+                        <li><a class="menu__item" href="{% url 'report_worktime' %}">Підсумковий звіт за період</a></li>
+                        <li><a class="menu__item" href="{% url 'report2_worktime' 2 %}">Звіт про розподіл витрат часу по працівниках</a></li>
+                        <li><a class="menu__item" href="{% url 'report2_worktime' 3 %}">Зведений звіт про розподіл витрат часу за періодами</a></li>
+                        <li><a class="menu__item" href="{% url 'report2_worktime' 4 %}">Зведений звіт про розподіл витрат часу за замовленнями</a></li>
+                        <li class="menu__item">---</li>
+                        <li><a class="menu__item" href="{% static 'docs/Instructions_accounting_working_hours_NTC.pdf' %}" target="_blank">Інструкція  з обліку робочого часу співробітників НТЦ</a></li>
+                    {% endif %}
+
+                    {% if 'app_worktime.TECH_' in permit|join:',' %}
+                    <!--  Облік робочого часу технологів - app_worktime  -->
+                        <li class="menu__item">-------------------------</li>
+                        <li><a class="menu__item" href="{% url 'list_worktime2' %}">Журнал обліку робочого часу технологів</a></li>
+                        <li><a class="menu__item" href="{% url 'report_worktime2' %}">Підсумковий звіт за період</a></li>
+                        <li><a class="menu__item" href="{% url 'report2_worktime2' 2 %}">Звіт про розподіл витрат часу по працівниках</a></li>
+                        <li><a class="menu__item" href="{% url 'report2_worktime2' 3 %}">Зведений звіт про розподіл витрат часу за періодами</a></li>
+                        <li><a class="menu__item" href="{% url 'report2_worktime2' 4 %}">Зведений звіт про розподіл витрат часу за замовленнями</a></li>
+                        <li class="menu__item">---</li>
+                        <li><a class="menu__item" href="{% static 'docs/Instructions_accounting_working_hours_TECH.pdf' %}" target="_blank">Інструкція  з обліку робочого часу технологів</a></li>
+                    {% endif %}
+
+                    {% if 'contenttypes.' in permit|join:',' %}
+                    <!--  Довідники -  contenttypes-->
+                        <li class="menu__item">-------------------------</li>
+                        <li><a class="menu__item" href="{% url 'dep_list' 0 %}">Підрозділи</a></li>
+                        <li><a class="menu__item" href="{% url 'empl_list' 0 %}">Співробітники</a></li>
+                    {% endif %}
+                    <li class="menu__item">-------------------------</li>
+                </ul>
+            </div>
+        </td>
+        <td class="title">
+            <h3 class="title"><a class="title" href="/">ПОРТАЛ Підприємства</a></h3>
+        </td>
+    </tr>
+</table>
+<hr>
+<div>
+    <p> <h3>{{ Title }}</h3> </p>
+    <p>
+        {% block content %}
+        {% endblock %}
+        <!-- Анімація на час очікування       -->
+        <div class="preloader" id="preloader">
+            <div class="preloader__row">
+                <div class="preloader__item"></div>
+                <div class="preloader__item"></div>
+            </div>
+        </div>
+    </p>
+</div>
+
+</body>
+</html>

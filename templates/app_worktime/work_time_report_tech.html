@@ -1,0 +1,267 @@
+<!---  Облік робочого часу технологів по проектам ----- -->
+{% extends "base_page.html" %}
+{% load static %}
+{% load my_filter_tags %}
+
+<!-- Центральна частина сайту  {{ form }}  -->
+{% block content %}
+	<form id="userform" method="POST">
+	{% csrf_token %}
+		{{ form }}
+		&nbsp;&nbsp;
+		<input type="submit" formaction="{% url 'report2_worktime2' kind_rep %}" value="<< Сформувати >>" >
+		<!-- якщо є інфа - можемо друкувати  -->
+		{% if rows_list_value %}
+<!--			<input type="submit" formaction="{% url 'report_print_worktime2' 'print' kind_rep %}" value="Друкувати звіт" id="id_printButton">-->
+			{% if kind_rep == 3 %}
+				<input type="submit" formaction="{% url 'report_print_worktime2' 'chart' kind_rep %}" value="Діаграма" id="id_chartButton">
+			{% endif %}
+		{% endif %}
+	</form>
+	<p><hr>
+
+	<!-- Таблиця Підсумкового звіту-->
+	{% if img_chart %}
+		<div>
+			<img src="data:image/png;base64,{{ img_chart }}" alt="Діаграма">
+		</div>
+	{% else %}
+	<div id="id_div_table">
+		<table class = "list_data collapsed" id="id_rep_table">
+			<!-- заголовки стовпців  -->
+			{% if kind_rep == 1 %}
+				<!-- звіт 1  -->
+				<tr>
+					{% for title_fld in title_fields %}
+						<th>{{ title_fld|linebreaksbr }}</th>
+					{% endfor %}
+				</tr>
+			{%  else %}
+				<!-- звіти 2,3  -->
+				<tr>
+					<th rowspan="3">№<br>п/п</th>
+					{% if kind_rep == 2 %}
+						<th rowspan="3">П.І.Б. (таб.номер), <br>посада</th>
+					{% else %}
+						<th rowspan="3">Звітний період</th>
+					{% endif %}
+					<th colspan="6">Розробка документації</th>
+					<th class="vertical-text" rowspan="3">Внесення змін до<br>документації</th>
+					<th class="vertical-text" rowspan="3">Контроль за дотриманням<br>технологічної дисципліни</th>
+					<th class="vertical-text" rowspan="3">Опрацювання листів узгодження,<br>графіків ЗЧ, разових маршрутів,<br>карток замовлень</th>
+					<th class="vertical-text" rowspan="3">Опрацювання дозволів на<br>відступ від вимог КТД</th>
+					<th class="vertical-text" rowspan="3">Підготовка відповідей на<br>запити зовнішніх організацій</th>
+					<th class="vertical-text" rowspan="3">Підготовка відповідей на<br>запити підрозділів<br>заводу</th>
+					<th class="vertical-text" rowspan="3">Розробка рекомендацій по<br>виготовленню обладнання</th>
+					<th class="vertical-text" rowspan="3">Підготовка та аналіз даних для<br>моделювання технологічних процесів<br>в Magma, NovaFlow, CAM-системах</th>
+					<th class="vertical-text" rowspan="3">Підготовка внутрішніх ОРД,<br>що не пов’язані із запитами<br>підрозділів заводу</th>
+					<th class="vertical-text" rowspan="3">Участь в нарадах та<br>конференціях</th>
+					<th class="vertical-text" rowspan="3">Навчання, підвищення квалі-<br>фікації та перевірка знань</th>
+					<th class="vertical-text" rowspan="3">Перевірка та узгодження<br>документації</th>
+					<th class="vertical-text" rowspan="3">Розробка керуючих програм<br>для верстатів з ЧПК</th>
+					<th class="vertical-text" rowspan="3">Інші роботи</th>
+					<th class="vertical-text" rowspan="3">Загальна кількість<br>витраченого часу, годин</th>
+					{% if kind_rep == 2 %}
+						<th class="vertical-text" rowspan="3"> Фактично відпрацьваний<br>час по табелю, годин </th>
+					{% endif %}
+					{% if kind_rep == 2 or kind_rep == 4 %}
+						<th class="vertical-text" rowspan="3"></th>
+					{% endif %}
+				</tr>
+				<tr>
+					<th class="vertical-text" rowspan="2">РАЗОМ:</th>
+					<th class="vertical-text" rowspan="2">Графічні документи</th>
+					<th class="vertical-text" rowspan="2">Текстові документи</th>
+					<th colspan="3">Електронні<br>документи</th>
+				</tr>
+				<tr>
+					<th class="vertical-text">РАЗОМ:</th>
+					<th class="vertical-text">Електронні 3D<br>моделі</th>
+					<th class="vertical-text">Технологічні<br>процеси</th>
+				</tr>
+			{% endif %}
+
+			<!-- існуючи рядки  -->
+			{%  for row in rows_list_value %}
+				{% if row.0 %}
+					{% if row.0|slice:':2' == '1.' %}
+						<tr id="sub_rows">
+					{% else %}
+						<tr>
+					{% endif %}
+				{% else %}
+					<tr id="total">
+				{% endif %}
+				{%  for value  in row %}
+					{% if row.0|slice:':2' == '1.' %}
+						<td id="sub_rows">
+					{% else %}
+						<td>
+					{% endif %}
+					{% if kind_rep == 2 and 'work_date' in value %}
+						<!--кнопка переходу до деталізації-->
+						<a href='{% url "list_worktime2" value %}' target="DetailTab">
+							<button type="button" title="Деталізація по співробітнику">
+								<img src="{% static 'img/preview.png' %}"></button>
+						</a>
+					{% elif kind_rep == 4 and 'filters' in value and row.0 %}
+						<!--кнопка переходу до деталізації-->
+						<a href='{% url "list_worktime2_filters" value %}' target="DetailTab">
+							<button type="button" title="Деталізація по замовленню">
+								<img src="{% static 'img/preview.png' %}"></button>
+						</a>
+					{% elif kind_rep == 4 and 'filters' in value and not row.0 %}
+						&nbsp;
+					{% else %}
+						{{ value|linebreaksbr }}
+					{% endif %}
+					</td>
+				{% endfor %}
+			</tr>
+			{% endfor %}
+		</table>
+		<!-- Пагінатор для звітів 2,4 -->
+		{% if kind_rep == 2 and params.total_row > 0  or  kind_rep == 4 and params.total_row > 0 %}
+			{% include "paginator_front.html" %}
+		{% endif %}
+	</div>
+		{% if img_pie_chart %}
+			<table width="60%">
+				<tr>
+					<td>
+						<img src="data:image/png;base64,{{ img_pie_chart }}" alt="Кругова діаграма">
+					</td>
+					<td>
+						<table class = "list_data collapsed">
+						{%  for row in total_table_html %}
+							<tr>
+								{%  for value  in row %}
+									{% if forloop.parentloop.first %}
+										<th>{{ value| safe }}</th>
+									{% else %}
+										<td>{{ value }}</td>
+									{% endif %}
+								{% endfor %}
+							</tr>
+						{% endfor %}
+						</table>
+					</td>
+				</tr>
+			</table>
+		{% else %}
+			<!-- Звіт 3 Підсумкова таблиця "Розподіл робочого часу" -->
+		<p>
+			<table class = "list_data collapsed" width="50%">
+			{%  for row in total_table_html %}
+				<tr>
+					{%  for value  in row %}
+						{% if forloop.parentloop.first %}
+							<th>{{ value|safe }}</th>
+						{% else %}
+							<td>{{ value }}</td>
+						{% endif %}
+					{% endfor %}
+				</tr>
+			{% endfor %}
+			</table>
+		</p>
+		{% endif %}
+
+	{% endif %}
+
+	<!--	Час виконання-->
+	<p class="info">{{ execution_time_str | linebreaksbr }}</p>
+
+	<!-- ============ функції та інше ============ -->
+	<script>
+		$(document).ready(function() {
+			function disableEnterKey(event) {
+				// Перевіряємо, чи код натиснутої клавіші є кодом клавіші Enter (код 13)
+				if (event.keyCode === 13) {
+					// Відміняємо дію клавіші Enter
+					event.preventDefault();
+				}
+			}
+
+			$("#userform").change(function() {
+				//  при зміні будь-якого поля <select> кнопка "Друкувати звіт" ставє невидимою
+				$("#id_printButton").css("display", "none");
+				$("#id_chartButton").css("display", "none");
+			});
+
+			//  ---- зміна назви поля Дата при виборі  "Період" та показ поля "Закінчення періоду"
+			let input_period = $("#id_period");
+			function handlePeriodChange() {
+				let label_start = $('label[for="id_par_work_date"]').first();
+				let label_end = $('label[for="id_par_work_date_end"]').first();
+				let input_end = $("#id_par_work_date_end");
+
+				let period = input_period.prop('checked'); // Використовуємо prop() для перевірки вибраного стану
+				label_start.text(period ? ' Початок періоду:' : ' Дата початку місяця:');
+				if ( period ) {
+					label_end.show();
+					input_end.show();
+				} else {
+					label_end.hide();
+					input_end.hide();
+				}
+			}
+			$( "#id_period" ).change(handlePeriodChange);
+
+			// Викликаємо функцію handlePeriodChange() одразу для встановлення початкового стану
+			handlePeriodChange();
+
+			// ----- Отримуємо форму за допомогою її ідентифікатора
+			let form = document.getElementById('userform');
+
+			// Додаємо обробник події submit до форми
+			form.addEventListener('submit', function(event) {
+				// Отримуємо значення полів дати
+				let startDate = new Date(document.getElementById('id_par_work_date').value);
+				let endDate = new Date(document.getElementById('id_par_work_date_end').value);
+
+				// Перевіряємо умову startDate < endDate при тому, що endDate є видимим
+				if (startDate > endDate && $("#id_par_work_date_end").is(":visible")) {
+					// Якщо умова не виконується, відміняємо відправку форми
+					event.preventDefault();
+
+					// Виводимо повідомлення про помилку
+					alert('Дата початку не може бути більше дати закінчення періоду !');
+				}
+				else {
+					// Визначаємо, яка кнопка submit була натиснута
+					let submitButton = event.submitter;
+
+					// Перевіряємо, яку кнопку submit було натиснуто
+	  				// якщо НЕ кнопку "Друкувати звіт"
+					if (submitButton.id !== 'id_printButton') {
+						//  анімація на час очікування
+						let preloader = document.getElementById("preloader");
+						if (preloader.style.display == "") {
+							preloader.style.display = "block";
+						}
+					}
+				}
+			});
+		});
+
+  	   	//  ----- Встановлення глобальних змінних та запуск Пагінатора
+		document.addEventListener("DOMContentLoaded", function() {
+			btn_add_global = 0;
+			{% if params.page and params.page > 0 and rows_list_value %}
+				//  змінна в глобальному контексті
+				{% if params.limit %}
+					limit_global = {{params.limit}};
+				{% endif %}
+				page_global = {{params.page}};
+					console.log('page_global=',page_global)
+				SelectPage(undefined, page_global);
+			{% else %}
+				limit_global = 0;
+				page_global = 1;
+			{% endif %}
+		});
+
+	</script>
+
+	{% endblock %}
