@@ -5,6 +5,7 @@
 *.iml
 /data/data.db
 data/data.db
+*.db
 .gitignore
 /.idea/.gitignore
 /ProjectDjango.docx
