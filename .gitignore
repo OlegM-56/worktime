@@ -3,7 +3,7 @@
 /~*.tmp
 *.xml
 *.iml
-data/data.db
+/data/data.db
 .gitignore
 /.idea/.gitignore
 /ProjectDjango.docx
