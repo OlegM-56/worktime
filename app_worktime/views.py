@@ -360,23 +360,23 @@ class WorkTime:
         # ---->
 
         # ********************* формування QR-code
-        if options:
-            import qrcode
-
-            # URL-рядок з параметрами
-            url_with_params = request.path
-            # QR-код
-            qr = qrcode.QRCode(
-                version=1,
-                error_correction=qrcode.constants.ERROR_CORRECT_L,
-                box_size=10,
-                border=4,
-            )
-            qr.add_data(url_with_params)
-            qr.make(fit=True)
-            img = qr.make_image(fill_color="black", back_color="white")
-            # Збережіть або відправте картинку до клієнта
-            img.save("static/qrcode.png")  # Збереження QR-коду в файл
+        # if options:
+        #     import qrcode
+        #
+        #     # URL-рядок з параметрами
+        #     url_with_params = request.path
+        #     # QR-код
+        #     qr = qrcode.QRCode(
+        #         version=1,
+        #         error_correction=qrcode.constants.ERROR_CORRECT_L,
+        #         box_size=10,
+        #         border=4,
+        #     )
+        #     qr.add_data(url_with_params)
+        #     qr.make(fit=True)
+        #     img = qr.make_image(fill_color="black", back_color="white")
+        #     # Збережіть або відправте картинку до клієнта
+        #     img.save("static/qrcode.png")  # Збереження QR-коду в файл
 
         # --- Пагінатор та параметри
         paginator = Paginator(options)
