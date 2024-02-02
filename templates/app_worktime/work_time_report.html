@@ -5,7 +5,7 @@
 
 <!-- Центральна частина сайту  {{ form }}  -->
 {% block content %}
-	<form id="userform" method="POST">
+	<form class="form-inline" id="userform" method="POST" >
 	{% csrf_token %}
 		{{ form }}
 		<input type="submit" formaction="{% url 'report2_worktime' kind_rep %}" value="<< Сформувати >>" >

@@ -4,11 +4,6 @@ from django import forms
 
 from app_worktime.models import *
 
-from django.forms.renderers import TemplatesSetting
-
-class CustomFormRenderer(TemplatesSetting):
-    field_template_name = "field_inline.html"
-
 
 # ----- Параметри відбору для Журналу обліку робочого часу----
 class WorkTimeForm(forms.Form):
