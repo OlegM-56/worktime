@@ -28,9 +28,9 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY',  'django-insecure-1fd#p%mp9+lvc
 DEBUG = bool(os.environ.get('DJANGO_DEBUG', 'True').strip())
 
 # для доступу з локального ПК та з мережі
-ALLOWED_HOSTS = ['127.0.0.1', '10.1.2.26', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', '10.1.2.26', 'localhost', 'mihailyk58.pythonanywhere.com']
 
-CSRF_TRUSTED_ORIGINS = ['http://10.1.2.26', 'http://localhost']
+CSRF_TRUSTED_ORIGINS = ['http://10.1.2.26', 'http://localhost', 'http://mihailyk58.pythonanywhere.com', 'https://mihailyk58.pythonanywhere.com']
 
 
 # Application definition
