@@ -1100,6 +1100,7 @@ class WorkTime:
             #   К-ть документів, приведених до формату А4
             sum_doc_kolA4 = sum_queryset['doc_kolA4__sum']
             if sum_doc_kolA4:
+                sum_doc_kolA4 = round(sum_doc_kolA4, 2)
                 if base_line: sum_doc_kolA4_total += sum_doc_kolA4
             else:
                 sum_doc_kolA4 = ''
