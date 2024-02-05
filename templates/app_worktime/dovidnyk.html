@@ -38,8 +38,13 @@
 				<td>{{ value }}</td>
 			{% endfor %}
 			{% if edit_mode %}
-				<td><button type="button" onclick="document.location='{% url url_dov_list row.id %}'">Правка</button>
-					<button type="button" onclick="DeleteRec({{row.id}})">! Видалити</button></td>
+				<td><button type="button" onclick="document.location='{% url url_dov_list row.id %}'" title="Правка">
+						<img src="{% static 'img/edit.png' %}">
+					</button>
+					<button type="button" onclick="DeleteRec({{row.id}})" title="! Видалити">
+						<img src="{% static 'img/delete.png' %}">
+					</button>
+				</td>
 			{% endif %}
     	</tr>
 		{% endfor %}
